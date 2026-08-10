@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
 
+const statusSequence = [
+    'Applied',
+    'Shortlisted',
+    'Technical Interview',
+    'HR Interview',
+    'Selected',
+    'Rejected'
+];
+
 const applicationSchema = new mongoose.Schema({
     job:{
         type:mongoose.Schema.Types.ObjectId,
@@ -13,8 +22,30 @@ const applicationSchema = new mongoose.Schema({
     },
     status:{
         type:String,
-        enum:['pending', 'accepted', 'rejected'],
-        default:'pending'
-    }
+        enum:statusSequence,
+        default:'Applied'
+    },
+    interviewDate: {
+        type: Date,
+        default: null
+    },
+    notes: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    statusHistory: [{
+        status: {
+            type: String,
+            enum: statusSequence,
+            required: true
+        },
+        changedAt: {
+            type: Date,
+            default: Date.now
+        }
+    }]
 },{timestamps:true});
+applicationSchema.index({ job: 1, applicant: 1 }, { unique: true });
+applicationSchema.index({ applicant: 1, status: 1 });
 export const Application  = mongoose.model("Application", applicationSchema);

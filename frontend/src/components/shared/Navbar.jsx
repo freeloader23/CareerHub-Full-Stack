@@ -29,24 +29,27 @@ const Navbar = () => {
         }
     }
     return (
-        <div className='bg-white'>
+        <div className='bg-white border-b border-slate-200'>
             <div className='flex items-center justify-between mx-auto max-w-7xl h-16'>
                 <div>
-                    <h1 className='text-2xl font-bold'>Job<span className='text-[#F83002]'>Portal</span></h1>
+                    <h1 className='text-2xl font-bold tracking-tight'>Career<span className='text-[#F83002]'>Hub</span></h1>
                 </div>
                 <div className='flex items-center gap-12'>
-                    <ul className='flex font-medium items-center gap-5'>
+                    <ul className='flex font-medium items-center gap-5 text-sm text-slate-600'>
                         {
                             user && user.role === 'recruiter' ? (
                                 <>
-                                    <li><Link to="/admin/companies">Companies</Link></li>
-                                    <li><Link to="/admin/jobs">Jobs</Link></li>
+                                    <li><Link className="hover:text-[#6A38C2]" to="/recruiter-dashboard">Dashboard</Link></li>
+                                    <li><Link className="hover:text-[#6A38C2]" to="/admin/companies">Companies</Link></li>
+                                    <li><Link className="hover:text-[#6A38C2]" to="/admin/jobs">Jobs</Link></li>
                                 </>
                             ) : (
                                 <>
-                                    <li><Link to="/">Home</Link></li>
-                                    <li><Link to="/jobs">Jobs</Link></li>
-                                    <li><Link to="/browse">Browse</Link></li>
+                                    <li><Link className="hover:text-[#6A38C2]" to="/">Home</Link></li>
+                                    <li><Link className="hover:text-[#6A38C2]" to="/jobs">Jobs</Link></li>
+                                    <li><Link className="hover:text-[#6A38C2]" to="/browse">Browse</Link></li>
+                                    <li><Link className="hover:text-[#6A38C2]" to="/saved-jobs">Saved Jobs</Link></li>
+                                    <li><Link className="hover:text-[#6A38C2]" to="/analytics">Analytics</Link></li>
                                 </>
                             )
                         }
@@ -57,7 +60,7 @@ const Navbar = () => {
                         !user ? (
                             <div className='flex items-center gap-2'>
                                 <Link to="/login"><Button variant="outline">Login</Button></Link>
-                                <Link to="/signup"><Button className="bg-[#6A38C2] hover:bg-[#5b30a6]">Signup</Button></Link>
+                                <Link to="/signup"><Button className="bg-[#6A38C2] hover:bg-[#5b30a6]">Create account</Button></Link>
                             </div>
                         ) : (
                             <Popover>

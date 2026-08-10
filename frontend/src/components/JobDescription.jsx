@@ -7,12 +7,13 @@ import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from '@/utils/constant';
 import { setSingleJob } from '@/redux/jobSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'sonner';
+import ApplicationTimeline from './ApplicationTimeline';
 
 const JobDescription = () => {
     const {singleJob} = useSelector(store => store.job);
     const {user} = useSelector(store=>store.auth);
-    const isIntiallyApplied = singleJob?.applications?.some(application => application.applicant === user?._id) || false;
-    const [isApplied, setIsApplied] = useState(isIntiallyApplied);
+    const isInitiallyApplied = singleJob?.applications?.some(application => application.applicant?._id === user?._id || application.applicant === user?._id) || false;
+    const [isApplied, setIsApplied] = useState(isInitiallyApplied);
 
     const params = useParams();
     const jobId = params.id;
@@ -23,15 +24,36 @@ const JobDescription = () => {
             const res = await axios.get(`${APPLICATION_API_END_POINT}/apply/${jobId}`, {withCredentials:true});
             
             if(res.data.success){
-                setIsApplied(true); // Update the local state
+                setIsApplied(true);
                 const updatedSingleJob = {...singleJob, applications:[...singleJob.applications,{applicant:user?._id}]}
-                dispatch(setSingleJob(updatedSingleJob)); // helps us to real time UI update
+                dispatch(setSingleJob(updatedSingleJob));
                 toast.success(res.data.message);
 
             }
         } catch (error) {
             console.log(error);
-            toast.error(error.response.data.message);
+            toast.error(error?.response?.data?.message || 'Unable to submit application.');
+        }
+    }
+
+    const saveToggleHandler = async () => {
+        try {
+            const existingSaved = singleJob?.saved || false;
+            if (!existingSaved) {
+                const res = await axios.post(`${JOB_API_END_POINT}/${jobId}/save`, {}, { withCredentials: true });
+                if (res.data.success) {
+                    dispatch(setSingleJob({ ...singleJob, saved: true }));
+                    toast.success(res.data.message);
+                }
+            } else {
+                const res = await axios.delete(`${JOB_API_END_POINT}/${jobId}/save`, { withCredentials: true });
+                if (res.data.success) {
+                    dispatch(setSingleJob({ ...singleJob, saved: false }));
+                    toast.success(res.data.message);
+                }
+            }
+        } catch (error) {
+            toast.error(error?.response?.data?.message || 'Unable to save this job.');
         }
     }
 
@@ -41,7 +63,7 @@ const JobDescription = () => {
                 const res = await axios.get(`${JOB_API_END_POINT}/get/${jobId}`,{withCredentials:true});
                 if(res.data.success){
                     dispatch(setSingleJob(res.data.job));
-                    setIsApplied(res.data.job.applications.some(application=>application.applicant === user?._id)) // Ensure the state is in sync with fetched data
+                    setIsApplied(res.data.job.applications.some(application=>application.applicant?._id === user?._id || application.applicant === user?._id));
                 }
             } catch (error) {
                 console.log(error);
@@ -54,29 +76,37 @@ const JobDescription = () => {
         <div className='max-w-7xl mx-auto my-10'>
             <div className='flex items-center justify-between'>
                 <div>
-                    <h1 className='font-bold text-xl'>{singleJob?.title}</h1>
-                    <div className='flex items-center gap-2 mt-4'>
-                        <Badge className={'text-blue-700 font-bold'} variant="ghost">{singleJob?.postion} Positions</Badge>
+                    <h1 className='font-bold text-3xl text-slate-900'>{singleJob?.title}</h1>
+                    <div className='flex items-center gap-2 mt-4 flex-wrap'>
+                        <Badge className={'text-blue-700 font-bold'} variant="ghost">{singleJob?.position || singleJob?.postion || 0} Positions</Badge>
                         <Badge className={'text-[#F83002] font-bold'} variant="ghost">{singleJob?.jobType}</Badge>
                         <Badge className={'text-[#7209b7] font-bold'} variant="ghost">{singleJob?.salary}LPA</Badge>
                     </div>
                 </div>
-                <Button
-                onClick={isApplied ? null : applyJobHandler}
-                    disabled={isApplied}
-                    className={`rounded-lg ${isApplied ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#7209b7] hover:bg-[#5f32ad]'}`}>
-                    {isApplied ? 'Already Applied' : 'Apply Now'}
-                </Button>
+                <div className='flex gap-2'>
+                    <Button onClick={saveToggleHandler} variant="outline" className="rounded-lg">{singleJob?.saved ? 'Saved' : 'Save'}</Button>
+                    <Button
+                    onClick={isApplied ? null : applyJobHandler}
+                        disabled={isApplied}
+                        className={`rounded-lg ${isApplied ? 'bg-gray-600 cursor-not-allowed' : 'bg-[#7209b7] hover:bg-[#5f32ad]'}`}>
+                        {isApplied ? 'Already Applied' : 'Apply Now'}
+                    </Button>
+                </div>
             </div>
-            <h1 className='border-b-2 border-b-gray-300 font-medium py-4'>Job Description</h1>
-            <div className='my-4'>
-                <h1 className='font-bold my-1'>Role: <span className='pl-4 font-normal text-gray-800'>{singleJob?.title}</span></h1>
-                <h1 className='font-bold my-1'>Location: <span className='pl-4 font-normal text-gray-800'>{singleJob?.location}</span></h1>
-                <h1 className='font-bold my-1'>Description: <span className='pl-4 font-normal text-gray-800'>{singleJob?.description}</span></h1>
-                <h1 className='font-bold my-1'>Experience: <span className='pl-4 font-normal text-gray-800'>{singleJob?.experience} yrs</span></h1>
-                <h1 className='font-bold my-1'>Salary: <span className='pl-4 font-normal text-gray-800'>{singleJob?.salary}LPA</span></h1>
-                <h1 className='font-bold my-1'>Total Applicants: <span className='pl-4 font-normal text-gray-800'>{singleJob?.applications?.length}</span></h1>
-                <h1 className='font-bold my-1'>Posted Date: <span className='pl-4 font-normal text-gray-800'>{singleJob?.createdAt.split("T")[0]}</span></h1>
+            <div className='border-b-2 border-b-gray-300 font-medium py-4 text-sm text-slate-500'>CareerHub Job Description</div>
+            <div className='my-4 grid md:grid-cols-2 gap-6'>
+                <div className='rounded-2xl border border-slate-200 bg-white p-6'>
+                    <h1 className='font-bold my-1'>Role: <span className='pl-4 font-normal text-gray-800'>{singleJob?.title}</span></h1>
+                    <h1 className='font-bold my-1'>Location: <span className='pl-4 font-normal text-gray-800'>{singleJob?.location}</span></h1>
+                    <h1 className='font-bold my-1'>Description: <span className='pl-4 font-normal text-gray-800'>{singleJob?.description}</span></h1>
+                    <h1 className='font-bold my-1'>Experience: <span className='pl-4 font-normal text-gray-800'>{singleJob?.experienceLevel || singleJob?.experience || 'Not specified'} yrs</span></h1>
+                    <h1 className='font-bold my-1'>Salary: <span className='pl-4 font-normal text-gray-800'>{singleJob?.salary}LPA</span></h1>
+                    <h1 className='font-bold my-1'>Total Applicants: <span className='pl-4 font-normal text-gray-800'>{singleJob?.applications?.length}</span></h1>
+                    <h1 className='font-bold my-1'>Posted Date: <span className='pl-4 font-normal text-gray-800'>{singleJob?.createdAt?.split("T")[0]}</span></h1>
+                </div>
+                <div className='rounded-2xl border border-slate-200 bg-slate-50 p-4'>
+                    <ApplicationTimeline application={isApplied ? { status: 'Applied', statusHistory: [{ status: 'Applied', changedAt: new Date() }] } : null} />
+                </div>
             </div>
         </div>
     )

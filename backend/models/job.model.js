@@ -3,34 +3,43 @@ import mongoose from "mongoose";
 const jobSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     description: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     requirements: [{
-        type: String
+        type: String,
+        trim: true
     }],
     salary: {
         type: Number,
-        required: true
+        required: true,
+        min: 0
     },
     experienceLevel:{
-        type:Number,
+        type:String,
         required:true,
+        trim:true,
     },
     location: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     jobType: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     position: {
         type: Number,
-        required: true
+        required: true,
+        min: 1,
+        default: 1
     },
     company: {
         type: mongoose.Schema.Types.ObjectId,
@@ -49,4 +58,5 @@ const jobSchema = new mongoose.Schema({
         }
     ]
 },{timestamps:true});
+jobSchema.index({ title: 'text', description: 'text', location: 'text' });
 export const Job = mongoose.model("Job", jobSchema);

@@ -4,6 +4,7 @@ import HeroSection from './HeroSection'
 import CategoryCarousel from './CategoryCarousel'
 import LatestJobs from './LatestJobs'
 import Footer from './shared/Footer'
+import CandidateAnalytics from './CandidateAnalytics'
 import useGetAllJobs from '@/hooks/useGetAllJobs'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -14,15 +15,16 @@ const Home = () => {
   const navigate = useNavigate();
   useEffect(() => {
     if (user?.role === 'recruiter') {
-      navigate("/admin/companies");
+      navigate("/recruiter-dashboard");
     }
-  }, []);
+  }, [navigate, user]);
   return (
     <div>
       <Navbar />
       <HeroSection />
       <CategoryCarousel />
       <LatestJobs />
+      {user?.role === 'student' && <CandidateAnalytics />}
       <Footer />
     </div>
   )
