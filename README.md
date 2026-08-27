@@ -1,4 +1,6 @@
-﻿# CareerHub — Full-Stack Recruitment & Placement Platform
+# CareerHub — Full-Stack Recruitment & Placement Platform
+
+**Live Demo:** [https://career-hub-full-stack-9d8g-54on5ho5a-nischal8.vercel.app/](https://career-hub-full-stack-9d8g-54on5ho5a-nischal8.vercel.app/)
 
 CareerHub is a full-stack recruitment and placement platform designed for modern hiring workflows. It connects candidates, recruiters, and companies through role discovery, applications, lifecycle management, recruiting operations, and placement dashboards.
 
